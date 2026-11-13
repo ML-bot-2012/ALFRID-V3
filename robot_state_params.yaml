@@ -1,0 +1,45 @@
+malharlabade@alfrid3:~$ cat /home/malharlabade/slam_config/robot_state_params.yaml
+/robot_state_publisher:
+  ros__parameters:
+    use_sim_time: false
+    robot_description: |
+      <?xml version="1.0"?>
+      <robot name="alfrid">
+        <material name="white"><color rgba="1.0 1.0 1.0 1.0"/></material>
+        <material name="blue"><color rgba="0.0 0.0 0.8 1.0"/></material>
+        
+        <link name="base_link">
+          <visual>
+            <origin xyz="0 0 0.255" rpy="0 0 0"/>
+            <geometry><box size="0.4 0.3 0.45"/></geometry>
+            <material name="white"/>
+          </visual>
+          <inertial>
+            <mass value="5.0"/>
+            <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+          </inertial>
+        </link>
+        
+        <link name="left_wheel"/><link name="right_wheel"/><link name="caster_wheel"/><link name="laser"/>
+        
+        <joint name="left_wheel" type="continuous">
+          <parent link="base_link"/><child link="left_wheel"/>
+          <origin xyz="0.0 0.18 0.065" rpy="-1.5708 0 0"/><axis xyz="0 0 1"/>
+        </joint>
+        
+        <joint name="right_wheel" type="continuous">
+          <parent link="base_link"/><child link="right_wheel"/>
+          <origin xyz="0.0 -0.18 0.065" rpy="1.5708 0 0"/><axis xyz="0 0 1"/>
+        </joint>
+        
+        <joint name="caster_wheel_joint" type="fixed">
+          <parent link="base_link"/><child link="caster_wheel"/>
+          <origin xyz="-0.15 0 0.02" rpy="0 0 0"/>
+        </joint>
+        
+        <joint name="lidar_joint" type="fixed">
+          <parent link="base_link"/><child link="laser"/>
+          <origin xyz="0.15 0.10 0.5" rpy="0 0 3.1415926"/>
+        </joint>
+      </robot>
+malharlabade@alfrid3:~$ 
