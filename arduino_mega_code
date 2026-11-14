@@ -1,0 +1,121 @@
+#include <Encoder.h>
+
+// Pins for Dual Motor Driver (TB6612FNG)
+#define PWMA 3
+#define AIN1 4
+#define AIN2 5
+#define STBY 9
+
+#define PWMB 6
+#define BIN1 8
+#define BIN2 7
+
+// Pins for Hardware Interrupt Encoders (Arduino Mega)
+#define ENC_A1 20
+#define ENC_A2 21
+#define ENC_B1 18
+#define ENC_B2 19
+
+#define COUNTS_PER_REV 5280.0
+
+Encoder encoderA(ENC_A1, ENC_A2);
+Encoder encoderB(ENC_B1, ENC_B2);
+
+unsigned long lastPub = 0;
+String inputString = "";
+bool stringComplete = false;
+
+void setup() {
+  Serial.begin(115200);
+  inputString.reserve(40);
+  
+  pinMode(PWMA, OUTPUT);
+  pinMode(AIN1, OUTPUT);
+  pinMode(AIN2, OUTPUT);
+  pinMode(STBY, OUTPUT);
+  
+  pinMode(PWMB, OUTPUT);
+  pinMode(BIN1, OUTPUT);
+  pinMode(BIN2, OUTPUT);
+  
+  digitalWrite(STBY, HIGH);
+  delay(500);
+  // NOTE: Kept comment print for terminal debug visibility
+  Serial.println("ALFRID V3 Ready");
+}
+
+void setMotorA(float speed) {
+  if (speed > 0) {
+    digitalWrite(AIN1, HIGH);
+    digitalWrite(AIN2, LOW);
+  } else {
+    digitalWrite(AIN1, LOW);
+    digitalWrite(AIN2, HIGH);
+  }
+  analogWrite(PWMA, min(255, (int)abs(speed)));
+}
+
+void setMotorB(float speed) {
+  if (speed > 0) {
+    digitalWrite(BIN1, HIGH);
+    digitalWrite(BIN2, LOW);
+  } else {
+    digitalWrite(BIN1, LOW);
+    digitalWrite(BIN2, HIGH);
+  }
+  analogWrite(PWMB, min(255, (int)abs(speed)));
+}
+
+void processCommand(String cmd) {
+  cmd.trim();
+  if (cmd.startsWith("V:")) {
+    int commaIdx = cmd.indexOf(',');
+    if (commaIdx != -1) {
+      float linear = cmd.substring(2, commaIdx).toFloat();
+      float angular = cmd.substring(commaIdx + 1).toFloat();
+      
+      float leftSpeed = (angular - (-linear)) * 200;
+      float rightSpeed = (angular + (-linear)) * 200;
+      
+      setMotorA(leftSpeed);
+      setMotorB(rightSpeed);
+    }
+  }
+}
+
+void serialEvent() {
+  while (Serial.available()) {
+    char inChar = (char)Serial.read();
+    if (inChar == '\n') {
+      stringComplete = true;
+    } else {
+      inputString += inChar;
+    }
+  }
+}
+
+void loop() {
+  if (stringComplete) {
+    processCommand(inputString);
+    inputString = "";
+    stringComplete = false;
+  }
+  
+  // High-Precision 50Hz telemetry stream (every 20ms)
+  if (millis() - lastPub > 20) {
+    lastPub = millis();
+    long posA = encoderA.read();
+    long posB = encoderB.read();
+    
+    // FIXED STRING PRINT FORMATTING: Matches the exact string expectation 
+    // of your Python serial packet parser (A:Value|B:Value) with no extra spaces or text.
+    Serial.print("A:");
+    Serial.print((float)posA / COUNTS_PER_REV, 4);
+    Serial.print("|B:");
+    Serial.print((float)(-posB) / COUNTS_PER_REV, 4);
+    Serial.println(); // Appends the vital '\n' character break
+  }
+}
+
+
+
