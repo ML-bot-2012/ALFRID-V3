@@ -1,0 +1,23 @@
+malharlabade@alfrid3:~$ cat /home/malharlabade/slam_config/laser_filter_config.yaml
+scan_to_scan_filter_chain:
+  ros__parameters:
+    filter1:
+      name: so101_arm_box_filter
+      type: laser_filters/LaserScanBoxFilter
+      params:
+        box_frame: base_link
+        min_x: 0.05
+        max_x: 0.58
+        min_y: -0.28
+        max_y: 0.28
+        min_z: -0.20
+        max_z: 0.80
+        invert: false
+malharlabade@alfrid3:~$ 
+
+
+
+
+
+
+
