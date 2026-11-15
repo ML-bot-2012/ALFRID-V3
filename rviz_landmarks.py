@@ -1,4 +1,4 @@
-malharlabade@alfrid3:~$ cat /home/malharlabade/rviz_landmarks.py
+malharlabade@alfrid3:~$ cat ~/rviz_landmarks.py
 import json
 import math
 import os
@@ -193,7 +193,13 @@ class RVizLandmarks(Node):
         goal.pose.header.stamp = self.get_clock().now().to_msg()
         goal.pose.pose.position.x = float(pt["x"])
         goal.pose.pose.position.y = float(pt["y"])
-        goal.pose.pose.orientation.w = 1.0
+        pos = self.get_robot_xy()
+        if pos is not None:
+            yaw = math.atan2(float(pt["y"]) - pos[1], float(pt["x"]) - pos[0])
+            goal.pose.pose.orientation.z = math.sin(yaw / 2.0)
+            goal.pose.pose.orientation.w = math.cos(yaw / 2.0)
+        else:
+            goal.pose.pose.orientation.w = 1.0
 
         print(f"[BASE] Driving to '{label}' ({pt['x']}, {pt['y']})...")
         send_future = self.nav_client.send_goal_async(goal)
