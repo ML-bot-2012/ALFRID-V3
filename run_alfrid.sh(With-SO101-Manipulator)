@@ -43,11 +43,9 @@ ros2 run rplidar_ros rplidar_composition --ros-args \
 echo "Waiting for laser scanner array to spin up..."
 sleep 10
 
-echo "[1.5/5] Deploying Anchored PointCloud2 Converter Server..."
-ros2 run pointcloud_to_laserscan laserscan_to_pointcloud_node --ros-args \
-  -p target_frame:=laser \
-  --remap scan:=/scan \
-  --remap cloud:=/cloud_in &
+echo "[1.5/5] Deploying SO-101 Visual Box Filter & PointCloud2 Converter Server..."
+ros2 run laser_filters scan_to_scan_filter_chain --ros-args --params-file /home/malharlabade/slam_config/laser_filter_config.yaml --remap scan:=/scan --remap scan_filtered:=/scan_filtered &
+sleep 1
 sleep 2
 
 echo "[2/5] Initializing custom hardware encoder processing stream..."
